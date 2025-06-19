@@ -148,7 +148,20 @@ img.add_border {
 <p style="padding-left: 60px;">利用 uwsgi 配置分組學員執行 cmsimde 動態內容管理系統編輯</p>
 <p style="padding-left: 60px;">設法將 <a href="https://mde.tw/reeborg/world.html">Reeborg's world</a> (<a href="https://github.com/mdecycu/reeborg">原始碼</a>) 與 cmsimde 網際內容管理系統整合</p>
 <p style="padding-left: 60px;"></p>
-<br />Midterm << <a href='Midterm.html'>Previous</a> <a href='Brython.html'>Next</a> >> Brython</div>
+<p>在 Windows 操作系統以 Nginx + waitress 配置分組倉儲的動態編輯系統與靜態內容檢視系統:</p>
+<ol>
+<li>之前設定的Nginx 伺服器, 是用來 Proxy 代理由 waitress 所啟動的 http 動態編輯系統</li>
+<li>啟動可攜 Python 程式系統, 確定能在 localhost 啟動分組動態編輯網站, 同時也能透過 init.py 的設定, 以組長的網域啟動</li>
+<li>在可攜系統中安裝 waitress 模組: pip install waitress</li>
+<li>修改 nginx.conf, 設法利用組長的 IPv6 網路位址對應的符號名稱, 以及 fullchain.pem + privkey.pem 啟動伺服器, 並從 waitress 啟動的 port 8080 代理至 IPv6 為主的 https port 443</li>
+<li>先以 waitress 在 localhost port 8080 啟動分組動態編輯網站後, 啟動 Nginx</li>
+<li>測試是否可利用 https, 以 mde.nfu.edu.tw 網域對應的伺服器名稱進行連線</li>
+</ol>
+<p style="padding-left: 60px;">這裡使用<span>waitress啟動+nginx啟動,就可以使用我的 https://w10.mde.nfu.edu.tw 啟動動態編輯網頁,而使用http則是設定成靜態網頁,這個部分還可以使用 https://w10.mde.nfu.edu.tw/reeborg/ 啟動器人網頁。---&gt;<span style="background-color: #00ffff;">這個部分都在Homework底下的HW1有詳細的說明</span></span></p>
+<p style="padding-left: 60px;"></p>
+<div id="gtx-trans" style="position: absolute; left: 103px; top: 403.475px;">
+<div class="gtx-trans-icon"></div>
+</div><br />Midterm << <a href='Midterm.html'>Previous</a> <a href='Brython.html'>Next</a> >> Brython</div>
         
     <!-- footer -->
       <div class="container">

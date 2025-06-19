@@ -147,11 +147,6 @@ img.add_border {
 <p>在 Windows 操作系統中建立一台 WWW 伺服器</p>
 <p>在 Ubuntu 操作系統建立一台 WWW 伺服器</p>
 <p>在 虛擬主機上建立一台 WWW 伺服器 (Windows and Ubuntu)</p>
-<p>Virtualbox</p>
-<p>利用<span> </span><a href="https://mde.tw/wcm2025/content/IPv6.html">https://mde.tw/wcm2025/content/IPv6.html</a><span> </span>中所分配的 IPv6 網址建立 Windows 與 Ubuntu 主機, 配置 nginx 伺服器.</p>
-<p><a href="http://229.cycu.org/win10.vdi">http://229.cycu.org/win10.vdi</a> </p>
-<p><a href="http://229.cycu.org/ubuntu.vdi">http://229.cycu.org/ubuntu.vdi</a> </p>
-<p><span>操作步驟 (Windows)</span>:</p>
 <ol>
 <li>下載<span> </span><a href="http://229.cycu.org/win10.vdi">http://229.cycu.org/win10.vdi</a>, 在電腦中啟動 Virtualbox 後新增虛擬主機.</li>
 <li>採用 win10.vdi 建立虛擬主機後, 將網路設為橋接後啟動.</li>
@@ -161,6 +156,12 @@ img.add_border {
 <li>利用 <a href="http://localhost/reeborg/?lang=en&amp;mode=python&amp;menu=/reeborg/worlds/menus/select_collection_en.json&amp;name=Alone&amp;url=/reeborg/worlds/tutorial_en/harvest1.json&amp;editor=https://mdewcm2025.github.io/hw-scrum-1/python/harvest1.py">http://localhost/reeborg/?lang=en&amp;mode=python&amp;menu=/reeborg/worlds/menus/select_collection_en.json&amp;name=Alone&amp;url=/reeborg/worlds/tutorial_en/harvest1.json&amp;editor=https://mdewcm2025.github.io/hw-scrum-1/python/harvest1.py</a> 進行測試.</li>
 <li>就機械設計的專業而言, 之後可以用來開發類似: <a href="https://github.com/youandvern/efficalc">https://github.com/youandvern/efficalc</a> </li>
 </ol>
+<p><span>操作步驟 (Windows)</span>:</p>
+<p><a href="http://229.cycu.org/ubuntu.vdi">http://229.cycu.org/ubuntu.vdi</a> </p>
+<p><a href="http://229.cycu.org/win10.vdi">http://229.cycu.org/win10.vdi</a> </p>
+<p>利用<span> </span><a href="https://mde.tw/wcm2025/content/IPv6.html">https://mde.tw/wcm2025/content/IPv6.html</a><span> </span>中所分配的 IPv6 網址建立 Windows 與 Ubuntu 主機, 配置 nginx 伺服器.</p>
+<p>Virtualbox</p>
+<p></p>
 <p><span style="background-color: #ffff00;"></span></p>
 <p><span style="background-color: #ffff00;">成功使用nginx建立建立全球資訊網伺服器，並可以執行拔蘿蔔程式<img alt="laughing" src="./../cmsimde/static/tinymce4/tinymce/plugins/emoticons/img/smiley-laughing.gif"/></span></p>
 <p><img alt="" height="438" src="./../images/螢幕擷取畫面 2025-05-15 102515.png" width="800"/></p>
@@ -170,6 +171,68 @@ img.add_border {
 <p>要先啟動nginx，再進到tmp/site ---&gt;python start_waitress.py ⭣⭣⭣</p>
 <p><span style="background-color: #ffff00;">使用nginx 取得w10.mde.nfu.edu.tw的https簽章 並成功用waitress啟動作業倉儲的動態網站⭣⭣⭣</span></p>
 <p><img alt="" height="423" src="./../images/螢幕擷取畫面 2025-06-05 120018.png" width="800"/></p>
+<p></p>
+<p><span style="background-color: #ffff00;">最後還有設定nginx.conf 讓我可以使用https://w10.mde.nfu.edu.tw/reeborg/ 連結到nginx/html/reeborg/ </span></p>
+<pre class="brush:py;auto-links:false;toolbar:false" contenteditable="false">worker_processes  1;
+
+# 【更改】使用真實路徑來指定日誌檔案位置
+error_log  D:/kmolab/portable_wcm2025/data/nginx-1.28.0/logs/error.log notice;
+
+events {
+    worker_connections  1024;
+}
+ 
+http {
+    include       mime.types;
+    default_type  application/octet-stream;
+    sendfile        on;
+    keepalive_timeout  65;
+ 
+    # 服務 HTTP (port 80) 的靜態網站
+    server {
+        listen       80;
+        listen       [::]:80;
+        
+        server_name  w10.mde.nfu.edu.tw;
+ 
+        # 【保持不變】這個路徑本來就是正確的
+        root   D:/kmolab/portable_wcm2025/data/tmp/site;
+        index  index.html;
+ 
+        location / {
+            try_files $uri $uri/ =404;
+        }
+    }
+ 
+    # 服務 HTTPS (port 443) 的動態網站 + Reeborg
+    server {
+        listen       443 ssl http2;
+        listen       [::]:443 ssl http2;
+        
+        server_name  w10.mde.nfu.edu.tw;
+ 
+        ssl_certificate      fullchain.pem;
+        ssl_certificate_key  privkey.pem;
+        ssl_protocols        TLSv1.2 TLSv1.3;
+        ssl_ciphers          HIGH:!aNULL:!MD5;
+ 
+        # 【更改】為 /reeborg/ 設定真實的物理路徑
+        location /reeborg/ {
+            alias D:/kmolab/portable_wcm2025/data/nginx-1.28.0/html/reeborg/;
+            index index.html index.htm;
+            try_files $uri $uri/ =404;
+        }
+ 
+        # 原有的設定：將其他所有請求轉發給後端 Python 程式
+        location / {
+            proxy_pass         http://[::1]:8080;
+            proxy_set_header   Host $host;
+            proxy_set_header   X-Real-IP $remote_addr;
+            proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header   X-Forwarded-Proto $scheme;
+        }
+    }
+}</pre>
 <p><span>操作步驟 (Ubuntu)</span>:</p>
 <ol>
 <li>下載<span> </span><a href="http://229.cycu.org/ubuntu.vdi">http://229.cycu.org/ubuntu.vdi</a>, 在電腦中啟動 Virtualbox 後新增虛擬主機.</li>
@@ -187,11 +250,9 @@ img.add_border {
 <li>在個人網站中建立 About, Courses, Certificates, Licenses, Contests, Misc 等 H1 頁面, 其中 About 可以放入個人簡介, Courses 則放入個人所修過課程的簡介與心得 (或成績), Certificates 放入各式英檢的內容, Licenses 則放入專業證照與實習項目介紹. Contests 則放入個人或團隊參賽紀錄. Misc 則放入尚未整理的瑣碎資料.</li>
 <li>個人網頁中的 Blog 可以詳細記錄個人參與的事件過程, Reveal.js 則放入個人的線上簡報內容</li>
 </ol>
-<hr/>
 <p>Vmware<span> </span><a href="https://blogs.vmware.com/cloud-foundation/2024/11/11/vmware-fusion-and-workstation-are-now-free-for-all-users/">最近宣布</a>適用於 Windows 及 Linux 的 Vmware Workstation Pro (<a href="https://docs.vmware.com/en/VMware-Workstation-Pro/17.6/rn/vmware-workstation-176-pro-release-notes/index.html">17.6</a>), 與適用於 MacOS 的 Vmware Fusion Pro 全面免費.</p>
 <p><a href="https://support.broadcom.com/group/ecx/productdownloads?subfamily=VMware+Workstation+Pro">下載 Vmware Workstation Pro</a><span> </span>(For Windows and Linux) - 註冊帳號後下載 VMware-workstation-full-17.6.2.exe</p>
-<p><a href="https://support.broadcom.com/group/ecx/productdownloads?subfamily=VMware+Fusion">下載 Vmware Fusion Pro</a><span> </span>(For Mac) - 註冊帳號後下載</p>
-<br />Homework << <a href='Homework.html'>Previous</a> <a href='HW2.html'>Next</a> >> HW2</div>
+<p><a href="https://support.broadcom.com/group/ecx/productdownloads?subfamily=VMware+Fusion">下載 Vmware Fusion Pro</a><span> </span>(For Mac) - 註冊帳號後下載</p><br />Homework << <a href='Homework.html'>Previous</a> <a href='HW2.html'>Next</a> >> HW2</div>
         
     <!-- footer -->
       <div class="container">
